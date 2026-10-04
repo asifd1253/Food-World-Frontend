@@ -1,93 +1,48 @@
 import { useState, useEffect } from "react";
-import { MENU_API } from "../utils/constants";
+import axios from "axios";
+import { BACKEND_BASE_URL } from "../utils/constants";
 
 const useRestaurantMenu = (restaurantId) => {
-  const [restaurantInfo, setRestaurantInfo] = useState({});
   const [menuItems, setMenuItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!restaurantId) {
+      return;
+    }
+
     fetchMenuData();
   }, [restaurantId]);
 
   async function fetchMenuData() {
     try {
-      const response = await fetch(`${MENU_API}/${restaurantId}.json`);
+      setIsLoading(true);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      const response = await axios.get(
+        `${BACKEND_BASE_URL}/menus/restaurant/${restaurantId}`,
+      );
 
-      const json = await response.json();
-      // console.log(data);
+      // console.log("Menu from backend:", response.data);
 
-      const cardsOfArray = json?.data?.cards || [];
+      const menuData = response.data || [];
 
-      // finding the Restaurant card
-      const restaurantCard = cardsOfArray.find((arrayIdx) => {
-        return arrayIdx?.card?.card?.info;
-      });
-      // console.log(restaurantCard);
-
-      const info = restaurantCard?.card?.card?.info;
-
-      setRestaurantInfo(info || {});
-
-      // finding the menu in the restaurant
-      const menu = cardsOfArray.find((arrayIdx) => {
-        return arrayIdx?.groupedCard?.cardGroupMap?.REGULAR?.cards;
-      });
-
-      const menuItems = menu?.groupedCard?.cardGroupMap?.REGULAR?.cards || [];
-
-      const extractedMenuItems = menuItems.flatMap((menuArrayIdx) => {
-        const menuData = menuArrayIdx?.card?.card;
-
-        // Normal category
-        if (
-          menuData?.["@type"] ===
-          "type.googleapis.com/swiggy.presentation.food.v2.ItemCategory"
-        ) {
-          return (
-            menuData.itemCards?.map((item) => ({
-              category: menuData.title,
-              ...item.card.info,
-            })) || []
-          );
-        }
-
-        // Nested category
-        if (
-          menuData?.["@type"] ===
-          "type.googleapis.com/swiggy.presentation.food.v2.NestedItemCategory"
-        ) {
-          return (
-            menuData.categories?.flatMap(
-              (category) =>
-                category.itemCards?.map((item) => ({
-                  category: `${menuData.title} / ${category.title}`,
-                  ...item.card.info,
-                })) || [],
-            ) || []
-          );
-        }
-        return [];
-      });
-
-      // console.log(extractedMenuItems);
-      setMenuItems(extractedMenuItems);
+      setMenuItems(menuData);
     } catch (error) {
-      console.log("Error fetching Menu: ", error.message);
+      console.error(
+        "Error fetching menu:",
+        error.response?.data || error.message,
+      );
+
+      setMenuItems([]);
     } finally {
       setIsLoading(false);
     }
   }
 
-  // console.log(restaurantInfo);
-  // console.log(menuItems);
-  // console.log(isLoading);
-
-  return { restaurantInfo, menuItems, isLoading };
+  return {
+    menuItems,
+    isLoading,
+  };
 };
 
 export default useRestaurantMenu;

@@ -1,16 +1,18 @@
 import { useDispatch, useSelector } from "react-redux";
 import MenuCategoryItems from "../../components/MenuCategoryItems";
-import { clearCart } from "../../redux/slices/cartSlice";
+import { clearCart } from "../../app/slices/cartSlice";
 import EmptyCart from "../../components/EmptyCart";
 import CartBill from "../../components/CartBill";
 
 const Cart = () => {
   const cartItems = useSelector((store) => store.cart.items);
+
   const totalItems = cartItems.length;
 
   const dispatch = useDispatch();
+
   const handleClearCart = () => {
-    return dispatch(clearCart());
+    dispatch(clearCart());
   };
 
   if (totalItems === 0) {
@@ -59,14 +61,14 @@ const Cart = () => {
               </div>
 
               {/* Items */}
-              {/* Cart Items */}
               <div>
                 {cartItems.map((item) => (
-                  <MenuCategoryItems key={item.id} curItem={item} />
+                  <MenuCategoryItems key={item.menuId} curItem={item} />
                 ))}
               </div>
             </div>
           </section>
+
           {/* Cart Bill */}
           <section>
             <CartBill />

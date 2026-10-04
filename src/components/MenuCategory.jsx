@@ -1,9 +1,9 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import MenuCategoryItems from "./MenuCategoryItems";
 
 const MenuCategory = ({ categoryName, curCategoryItems }) => {
   const [isOpen, setIsOpen] = useState(true);
+
   const handleCollapse = () => {
     setIsOpen(!isOpen);
   };
@@ -20,13 +20,17 @@ const MenuCategory = ({ categoryName, curCategoryItems }) => {
         </p>
 
         <div className="flex items-center gap-3">
+          {/* Item Count */}
           <span className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide ring-1">
             {curCategoryItems.length} Items
           </span>
 
           {/* Collapse Button */}
           <button
-            onClick={handleCollapse}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCollapse();
+            }}
             className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center text-xl font-bold text-slate-700 transition-all"
             aria-label={isOpen ? "Collapse category" : "Expand category"}
           >
@@ -41,14 +45,11 @@ const MenuCategory = ({ categoryName, curCategoryItems }) => {
         </div>
       </div>
 
-      {/*  Category Multiple Items*/}
+      {/* Category Items */}
       {isOpen && (
         <div>
-          {curCategoryItems.map((curItem, index) => (
-            <MenuCategoryItems
-              key={`${curItem.id}-${index}`}
-              curItem={curItem}
-            />
+          {curCategoryItems.map((curItem) => (
+            <MenuCategoryItems key={curItem.menuId} curItem={curItem} />
           ))}
         </div>
       )}

@@ -9,11 +9,10 @@ const CartBill = () => {
 
   // Calculate subtotal
   const subtotal = cartItems.reduce((total, curItem) => {
-    const price = curItem.price || curItem.defaultPrice || 0;
-    if (curItem.quantity > 1) {
-      return total + curItem.quantity * price;
-    }
-    return total + price;
+    const price = Number(curItem?.price) || 0;
+    const quantity = Number(curItem?.quantity) || 0;
+
+    return total + price * quantity;
   }, 0);
 
   // Delivery fee
@@ -22,20 +21,22 @@ const CartBill = () => {
   // Platform fee
   const platformFee = subtotal > 0 ? 5 : 0;
 
-  // Total
+  // Total amount
   const totalAmount = subtotal + deliveryFee + platformFee;
 
-  // Convert paise to rupees
+  // Format price
   const formatPrice = (price) => {
-    return `₹${(price / 100).toFixed(0)}`;
+    return `₹${price.toFixed(2)}`;
   };
+
   return (
     <aside className="lg:col-span-1">
       <div className="sticky top-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        {/* Heading */}
         <h2 className="text-lg font-bold text-slate-900">Bill Details</h2>
 
         <div className="mt-5 space-y-4">
-          {/* Subtotal */}
+          {/* Item Total */}
           <div className="flex items-center justify-between text-sm">
             <span className="text-slate-500">Item Total</span>
 
@@ -44,18 +45,22 @@ const CartBill = () => {
             </span>
           </div>
 
-          {/* Delivery */}
+          {/* Delivery Fee */}
           <div className="flex items-center justify-between text-sm">
             <span className="text-slate-500">Delivery Fee</span>
 
-            <span className="font-semibold text-slate-800">₹{deliveryFee}</span>
+            <span className="font-semibold text-slate-800">
+              ₹{deliveryFee.toFixed(2)}
+            </span>
           </div>
 
-          {/* Platform */}
+          {/* Platform Fee */}
           <div className="flex items-center justify-between text-sm">
             <span className="text-slate-500">Platform Fee</span>
 
-            <span className="font-semibold text-slate-800">₹{platformFee}</span>
+            <span className="font-semibold text-slate-800">
+              ₹{platformFee.toFixed(2)}
+            </span>
           </div>
         </div>
 
@@ -67,7 +72,7 @@ const CartBill = () => {
           <span className="text-base font-bold text-slate-900">To Pay</span>
 
           <span className="text-xl font-extrabold text-slate-950">
-            {formatPrice(totalAmount + (deliveryFee + platformFee) * 100)}
+            {formatPrice(totalAmount)}
           </span>
         </div>
 

@@ -1,41 +1,39 @@
-import { useState, useEffect } from "react";
-import { RESTAURANTS_API, SWIGGY_URL } from "../utils/constants";
+import { useEffect } from "react";
+import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+
+import { BACKEND_BASE_URL } from "../utils/constants";
+import { addRestaurants } from "../app/slices/restaurantSlice";
 
 const useRestaurants = () => {
-  const [restaurantList, setRestaurantList] = useState([]);
+  const dispatch = useDispatch();
+
+  const restaurantList = useSelector((store) => store.restaurant.restaurants);
+
   useEffect(() => {
-    fetchData();
+    fetchRestaurants();
   }, []);
 
-  async function fetchData() {
+  async function fetchRestaurants() {
     try {
-      // const response = await fetch(CORS_PROXY_URL);
-      //   const response = await fetch(SWIGGY_URL);
-      const response = await fetch(RESTAURANTS_API);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      const response = await axios.get(`${BACKEND_BASE_URL}/restaurants`);
 
-      const json = await response.json();
-      // console.log(json);
+      // console.log("Restaurants from backend:", response.data);
 
-      const cards = json?.data?.cards || [];
-      const restaurantCard = cards.find(
-        (card) => card?.card?.card?.gridElements?.infoWithStyle?.restaurants,
-      );
-      const restaurants =
-        restaurantCard?.card?.card?.gridElements?.infoWithStyle?.restaurants ||
-        [];
-      // console.log("Restaurant Card:", restaurantCard);
-      // console.log("Restaurants:", restaurants);
-      // console.log(restaurants.map((restaurant) => restaurant.info.id));
+      const restaurants = response.data || [];
 
-      setRestaurantList(restaurants);
+      dispatch(addRestaurants(restaurants));
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error(
+        "Error fetching restaurants:",
+        error.response?.data || error.message,
+      );
     }
   }
-  return { restaurantList };
+
+  return {
+    restaurantList,
+  };
 };
 
 export default useRestaurants;

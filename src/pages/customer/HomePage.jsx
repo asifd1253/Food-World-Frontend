@@ -1,50 +1,28 @@
 import RestaurantCard from "../../components/RestaurantCard";
 import { useState, useEffect } from "react";
-import { RESTAURANTS_API } from "../../utils/constants";
+import useRestaurants from "../../hooks/useRestaurants";
 import HomeShimmer from "../../components/HomeShimmer";
 
 const HomePage = () => {
-  const [restaurantList, setRestaurantList] = useState([]);
+  const { restaurantList } = useRestaurants();
+
   const [filteredRestaurantList, setFilteredRestaurantList] = useState([]);
   const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  async function fetchData() {
-    try {
-      const response = await fetch(RESTAURANTS_API);
-      const jsObj = await response.json();
-
-      const cards = jsObj?.data?.cards || [];
-      const restaurantCard = cards.find(
-        (card) => card?.card?.card?.gridElements?.infoWithStyle?.restaurants,
-      );
-      const restaurants =
-        restaurantCard?.card?.card?.gridElements?.infoWithStyle?.restaurants ||
-        [];
-
-      setRestaurantList(restaurants);
-      setFilteredRestaurantList(restaurants);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  }
-
-  useEffect(() => {
     const searchTextLower = searchText.toLowerCase();
+
     const filteredList = restaurantList.filter((restaurant) => {
-      if (
-        restaurant.info.name.toLowerCase().includes(searchTextLower) ||
-        restaurant.info.cuisines
-          .join(", ")
-          .toLowerCase()
-          .includes(searchTextLower)
-      ) {
-        return true;
-      }
+      const restaurantName = restaurant.restaurantName?.toLowerCase() || "";
+
+      const cuisineType = restaurant.cuisineType?.toLowerCase() || "";
+
+      return (
+        restaurantName.includes(searchTextLower) ||
+        cuisineType.includes(searchTextLower)
+      );
     });
+
     setFilteredRestaurantList(filteredList);
   }, [searchText, restaurantList]);
 
@@ -56,10 +34,11 @@ const HomePage = () => {
     </div>
   ) : (
     <div>
+      {/* Search */}
       <div className="m-6 flex items-center justify-center gap-3">
         <input
           type="text"
-          className="active:scale-95 h-10 w-full max-w-2xl rounded-lg border border-gray-300 px-3 text-base font-medium outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+          className="h-10 w-full max-w-2xl rounded-lg border border-gray-300 px-3 text-base font-medium outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200 active:scale-95"
           placeholder="Search for restaurants or cuisines..."
           value={searchText}
           onChange={(e) => {
@@ -67,12 +46,15 @@ const HomePage = () => {
           }}
         />
       </div>
+
+      {/* Restaurants */}
       <div className="flex flex-wrap justify-center">
         {filteredRestaurantList.map((restaurant) => (
-          <RestaurantCard key={restaurant.info.id} resData={restaurant} />
+          <RestaurantCard key={restaurant.restaurantId} resData={restaurant} />
         ))}
       </div>
     </div>
   );
 };
+
 export default HomePage;
